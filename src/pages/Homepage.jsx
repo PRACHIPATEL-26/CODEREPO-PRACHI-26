@@ -1,48 +1,52 @@
 import React from "react";
-import { Container, Grid, Card, CardContent, CardMedia, Typography } from "@mui/material";
-import { styled } from "@mui/system";
-
-const GradientBackground = styled("div")({
-  minHeight: "100vh",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "#fff",
-  textAlign: "center",
-});
+import { Container, Grid, Card, CardContent, CardMedia, Typography, Button } from "@mui/material";
 
 const services = [
-  { title: "Mehendi", image: "https://images.picxy.com/cache/2020/5/20/87dec57f95c119152ac4ee7f26a3521b.jpg", description: "Elegant and artistic mehendi designs." },
-  { title: "Makeup", image: "https://www.ogleschool.edu/wp-content/uploads/2014/04/best-traits-of-makeup-artist.jpg", description: "Get a glamorous look from our experts." },
-  { title: "Nail Art", image: "https://i.pinimg.com/736x/5e/a7/94/5ea7948619cae78a0472c7b689eb41bd.jpg", description: "Trendy and stylish nail art services." }
+  {
+    title: "Mehendi Art",
+    description: "Intricate and beautiful mehendi designs for all occasions.",
+    image: "https://cdn.pixabay.com/photo/2017/10/14/06/03/mehndi-2849864_640.jpg",
+  },
+  {
+    title: "Makeup Services",
+    description: "Professional makeup services to enhance your beauty.",
+    image: "https://www.luxurylifestylemag.co.uk/wp-content/uploads/2023/07/bigstock-Makeup-Artist-Applies-Eye-Shad-470517451.jpg",
+  },
+  {
+    title: "Nail Art",
+    description: "Trendy and stylish nail art designs for every occasion.",
+    image: "https://www.instyle.com/thmb/kQwJUEGDXzlk7m1T_kXnDVgqvG8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/WonkySmiley-54db0f7506044bcd90561928dccc0bb9.jpeg",
+  },
 ];
 
-
-const HomePage = () => {
+const ServicesPage = () => {
   return (
-    <GradientBackground>
-      <Container sx={{ mt: 4 }}>
-        <Typography style={{ color: "black" }} variant="h3" gutterBottom>
-          Enhance Your Beauty with GlamourShine!
-        </Typography>
-
-        <Grid container spacing={3} sx={{ mt: 4 }}>
-          {services.map((service, index) => (
-            <Grid item xs={12} sm={4} key={index}>
-              <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                <CardMedia component="img" height="250" image={service.image} alt={service.title} />
-                <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-                  <Typography variant="h5">{service.title}</Typography>
-                  <Typography variant="body1" color="text.secondary">{service.description}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    </GradientBackground>
+    <Container sx={{ py: 5 , mt:10}}>
+      <Typography variant="h3" textAlign="center" gutterBottom>
+      Enhance Your Beauty with GlamourShine!
+      </Typography>
+      <Grid container spacing={4} textAlign={"center"}>
+        {services.map((service, index) => (
+          <Grid item key={index} xs={12} sm={6} md={4}>
+            <Card sx={{ maxWidth: 345, mx: "auto", boxShadow: 3, borderRadius: 3 }}>
+              <CardMedia component="img" height="220" image={service.image} alt={service.title} />
+              <CardContent>
+                <Typography gutterBottom variant="h5">
+                  {service.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {service.description}
+                </Typography>
+                <Button variant="contained" sx={{ mt: 2, backgroundColor: "#c69087" }} fullWidth>
+                  Book Now
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
   );
 };
 
-export default HomePage;
+export default ServicesPage;

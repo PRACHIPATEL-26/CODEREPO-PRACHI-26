@@ -3,7 +3,7 @@ import { Container, TextField, Button, Typography, Grid, Paper } from "@mui/mate
 
 const ContactUs = () => {
   return (
-    <Container maxWidth="sm" sx={{ mt: 10}}>
+    <Container maxWidth="sm" sx={{ mt: 10.5}}>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <Typography variant="h4" align="center" gutterBottom>
           Contact Us
