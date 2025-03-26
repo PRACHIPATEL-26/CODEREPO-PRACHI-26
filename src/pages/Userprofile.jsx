@@ -46,7 +46,7 @@ function UserProfile() {
 
   return (
     <Container maxWidth="md">
-      <Paper elevation={3} style={{ padding: "20px", marginTop: "20px", textAlign: "center" }}>
+      <Paper elevation={3} style={{ padding: "20px", marginTop: "80px", textAlign: "center" }}>
         <div style={{ position: "relative", display: "inline-block" }}>
           <Avatar
             src={profileImage}
@@ -64,7 +64,7 @@ function UserProfile() {
             </IconButton>
           )}
         </div>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom style={{color:"#825272"}}>
           User Profile
         </Typography>
         <Grid container spacing={2}>

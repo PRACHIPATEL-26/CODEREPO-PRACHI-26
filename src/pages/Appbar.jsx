@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -18,7 +18,29 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  
 
+  // Navigation items for User and Artist
+  const userNavItems = [
+    { label: "Home", path: "/Homepage" },
+    { label: "User Profile", path: "/User/Profile" },
+    {label:" View Previous Orders" , path:"User/Orders"},
+    { label: "About Us", path: "/Aboutuspage" },
+    { label: "Contact", path: "/Contactus" },
+  ];
+
+  const artistNavItems = [
+    { label: "View Appointments", path: "/Artist/Booking" },
+    { label: "Profile", path: "/Artist/Profile" },
+    { label: "Help", path: "/Artist/Help" },
+  ];
+
+  // Check current path to decide which menu to show
+  const isArtistPath = location.pathname.startsWith("/Artist");
+  const navItems = isArtistPath ? artistNavItems : userNavItems;
+
+  // Toggle Drawer
   const toggleDrawer = (open) => (event) => {
     if (event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
       return;
@@ -26,34 +48,24 @@ const Navbar = () => {
     setDrawerOpen(open);
   };
 
-  const navItems = [
-    { label: "Home", path: "/Homepage" },
-    { label: "Appointment", path: "/Appointment" },
-    { label: "About Us", path: "/Aboutuspage" },
-    // { label: "Services", path: "/services" },
-    { label: "Contact", path: "/Contactus" },
-  ];
-
   return (
     <AppBar position="absolute" sx={{ backgroundColor: "#c69087" }}>
       <Toolbar>
-        {/* Menu Button for Opening Drawer */}
+        {/* Drawer Menu Icon */}
         <IconButton color="inherit" onClick={toggleDrawer(true)}>
           <MenuIcon />
         </IconButton>
 
-        {/* Side Drawer */}
+        {/* Drawer Component */}
         <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
           <div style={{ width: 250, backgroundColor: "#FFF", height: "100%" }}>
             <List>
-              {/* Back Button */}
               <ListItem button onClick={toggleDrawer(false)}>
                 <ArrowBackIcon />
                 <ListItemText primary="" sx={{ marginLeft: 2 }} />
               </ListItem>
               <Divider />
 
-              {/* Navigation Items */}
               {navItems.map((item, index) => (
                 <ListItem
                   button
@@ -71,13 +83,19 @@ const Navbar = () => {
           </div>
         </Drawer>
 
-        {/* Logo & Title */}
+        {/* App Title */}
         <Typography variant="h6" sx={{ flexGrow: 1, color: "#FFF", marginLeft: 2 }}>
           GlamourShine
         </Typography>
 
         {/* Login Button */}
-        <Button color="inherit" sx={{ marginLeft: "auto" }} onClick={()=> navigate("/Userlogin")}>LOGIN</Button>
+        <Button
+  color="inherit"
+  sx={{ marginLeft: "auto" }}
+  onClick={() => navigate(isArtistPath ? "/Artist/Login" : "/User/Login")}
+>
+  LOGIN
+</Button>
       </Toolbar>
     </AppBar>
   );

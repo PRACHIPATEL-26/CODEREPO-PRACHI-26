@@ -31,7 +31,7 @@ function Trial() {
           backgroundColor: "#fdfcfc"
         }}
       >
-        <Typography variant="h4" align="center" style={{color:"#825272"}} gutterBottom>
+        <Typography variant="h4" align="center" gutterBottom style={{color:"#825272"}}>
           Login Page
         </Typography>
 
@@ -60,7 +60,7 @@ function Trial() {
             <Link
               component="button"
               variant="body2"
-              onClick={() => navigate("/User/Forgotpw")}
+              onClick={() => navigate("/Artist/Forgotpw")}
               style={{ marginTop: "8px", marginBottom: "16px" }}
             >
               Forgot password?
@@ -79,7 +79,7 @@ function Trial() {
 
         <Typography align="center" style={{ marginTop: "20px" }}>
           Don't have an account?{" "}
-          <Button color="primary" onClick={() => navigate("/User/Signup")}>
+          <Button color="primary" onClick={() => navigate("/Artist/Signup")}>
             Sign Up
           </Button>
         </Typography>

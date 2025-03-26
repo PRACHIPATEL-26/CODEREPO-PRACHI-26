@@ -7,7 +7,7 @@ const ForgetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate=useNavigate();
-  const isArtistPath = location.pathname.includes("Artist");
+  const isArtistPath = location.pathname.includes("User");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ const ForgetPassword = () => {
             style={{backgroundColor:"#c69087"}}
             fullWidth
             sx={{ mt: 2 }}
-            onClick={() => navigate(isArtistPath ? "/Artist/Login" : "/User/Login")}
+            onClick={() => navigate(isArtistPath ? "/User/Login":"/Artist/Login")}
           >
             Reset Password
           </Button>

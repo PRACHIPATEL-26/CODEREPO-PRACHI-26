@@ -5,7 +5,7 @@ const ContactUs = () => {
   return (
     <Container maxWidth="sm" sx={{ mt: 10.5}}>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+        <Typography variant="h4" align="center" gutterBottom style={{color:"#825272"}}>
           Contact Us
         </Typography>
         <Typography variant="body1" align="center" gutterBottom>
