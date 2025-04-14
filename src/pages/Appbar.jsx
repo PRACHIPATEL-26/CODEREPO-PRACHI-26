@@ -19,20 +19,20 @@ const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  
 
   // Navigation items for User and Artist
   const userNavItems = [
     { label: "Home", path: "/Homepage" },
     { label: "User Profile", path: "/User/Profile" },
-    {label:" View Previous Orders" , path:"User/Orders"},
+    { label: "View Previous Orders", path: "User/Orders" },
     { label: "About Us", path: "/Aboutuspage" },
     { label: "Contact", path: "/Contactus" },
   ];
 
   const artistNavItems = [
-    { label: "View Appointments", path: "/Artist/Booking" },
+    { label: "View Appointments", path: "/Artist/Bookingreq" },
     { label: "Profile", path: "/Artist/Profile" },
+    { label: "Earnings", path: "/Artist/Earning" },
     { label: "Help", path: "/Artist/Help" },
   ];
 
@@ -52,9 +52,11 @@ const Navbar = () => {
     <AppBar position="absolute" sx={{ backgroundColor: "#c69087" }}>
       <Toolbar>
         {/* Drawer Menu Icon */}
-        <IconButton color="inherit" onClick={toggleDrawer(true)}>
-          <MenuIcon />
-        </IconButton>
+        {localStorage.getItem("token") ? (
+          <IconButton color="inherit" onClick={toggleDrawer(true)}>
+            <MenuIcon />
+          </IconButton>
+        ) : null}
 
         {/* Drawer Component */}
         <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
@@ -88,14 +90,30 @@ const Navbar = () => {
           GlamourShine
         </Typography>
 
-        {/* Login Button */}
-        <Button
-  color="inherit"
-  sx={{ marginLeft: "auto" }}
-  onClick={() => navigate(isArtistPath ? "/Artist/Login" : "/User/Login")}
->
-  LOGIN
-</Button>
+        {/* Login / Logout Button */}
+       {/* Login / Logout Button */}
+{location.pathname !== "/" && location.pathname !== "/Mainpage" && (
+  localStorage.getItem("token") ? (
+    <Button
+      color="inherit"
+      sx={{ marginLeft: "auto" }}
+      onClick={() => {
+        localStorage.removeItem("token");
+        navigate(isArtistPath ? "/Artist/Login" : "/User/Login");
+      }}
+    >
+      LOGOUT
+    </Button>
+  ) : (
+    <Button
+      color="inherit"
+      sx={{ marginLeft: "auto" }}
+      onClick={() => navigate(isArtistPath ? "/Artist/Login" : "/User/Login")}
+    >
+      LOGIN
+    </Button>
+  )
+)}
       </Toolbar>
     </AppBar>
   );

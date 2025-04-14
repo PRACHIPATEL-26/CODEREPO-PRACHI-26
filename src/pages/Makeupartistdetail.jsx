@@ -13,7 +13,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import { useNavigate } from "react-router-dom";
 
-const Mahendiartistdetail = ({ artist }) => {
+const Makeupartistdetail = ({ artist }) => {
   const navigate = useNavigate();
 
   const handleBookAppointment = (service, cost) => {
@@ -81,19 +81,18 @@ const Mahendiartistdetail = ({ artist }) => {
       <Typography color="text.secondary" mb={2}>
         {artist.about}
       </Typography>
-
-      <Typography variant="h6">Gallery</Typography>
-      <Grid container spacing={2} mt={1}>
-        {artist.gallery?.map((img, idx) => (
-          <Grid item xs={4} key={idx}>
-            <img
-              src={img}
-              alt={`work-${idx}`}
-              style={{ width: "100%", borderRadius: 8, height: "300px" }}
-            />
-          </Grid>
-        ))}
-      </Grid>
+       <Typography variant="h6">Gallery</Typography>
+            <Grid container spacing={2} mt={1}>
+              {artist.gallery?.map((img, idx) => (
+                <Grid item xs={4} key={idx}>
+                  <img
+                    src={img}
+                    alt={`work-${idx}`}
+                    style={{ width: "100%", borderRadius: 8, height: "300px" }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
 
       <Typography variant="h6" mt={4}>
         Services
@@ -130,4 +129,4 @@ const Mahendiartistdetail = ({ artist }) => {
   );
 };
 
-export default Mahendiartistdetail;
+export default Makeupartistdetail;

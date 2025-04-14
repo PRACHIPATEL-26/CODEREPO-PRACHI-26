@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {db} from "../config/firebase";
 import {
   Grid,
   Typography,
@@ -10,24 +11,54 @@ import {
   Box,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
 const HomePage = () => {
   const [location, setLocation] = useState('');
   const [service, setService] = useState('');
-  const navigate=useNavigate();
+  const [services, setServices] = useState([]);
+  const [locations, setLocations] = useState([]);
+  
+  const navigate = useNavigate();
+  const db = getFirestore();
+
+  // Fetch services from Firestore
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'services'));
+        const servicesData = []; 
+        const locationsSet = new Set();
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          // console.log('---',data);
+          servicesData.push(data.name);
+          data.location.forEach((loc) => locationsSet.add(loc.trim()));
+        });
+
+        setServices(servicesData);
+        setLocations(Array.from(locationsSet));
+      } catch (err) {
+        console.error('Error fetching services:', err);
+      }
+    };
+
+    fetchServices();
+  }, [db]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     if (!location || !service) {
-      alert("Please select both location and service.");
+      alert('Please select both location and service.');
       return;
     }
-  
+
     // Map service to route path
     let route = '';
     switch (service.toLowerCase()) {
-      case 'mehendi':
+      case 'mahendi':
         route = '/User/Mahendiartist';
         break;
       case 'nail art':
@@ -37,13 +68,12 @@ const HomePage = () => {
         route = '/User/Makeupartist';
         break;
       default:
-        route ='/Homepage';
+        route = '/Homepage';
     }
-  
+
     // Navigate to the selected service page with location as query
     navigate(`${route}?location=${location}`);
   };
-  
 
   return (
     <Grid
@@ -51,8 +81,6 @@ const HomePage = () => {
       sx={{
         height: '97vh',
         overflow: 'hidden',
-   
-        
       }}
     >
       {/* Left Side */}
@@ -61,7 +89,6 @@ const HomePage = () => {
         xs={12}
         md={6}
         sx={{
-      
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -69,11 +96,15 @@ const HomePage = () => {
           p: 4,
         }}
       >
-        <Typography variant="h3" sx={{ color:"#c69087", fontWeight: 'bold', textAlign: 'center' }}>
+        <Typography variant="h3" sx={{ color: '#c69087', fontWeight: 'bold', textAlign: 'center' }}>
           Welcome to GlamourShine
         </Typography>
-        <Typography variant="h6" sx={{ textAlign: 'center', mt: 2, maxWidth: 400,color:"#825272"}}>
-          Discover the elegance within you. Book your beauty sessions with the finest artists in town!
+        <Typography
+          variant="h6"
+          sx={{ textAlign: 'center', mt: 2, maxWidth: 400, color: '#825272' }}
+        >
+          Discover the elegance within you. Book your beauty sessions with the finest artists in
+          town!
         </Typography>
       </Grid>
 
@@ -83,7 +114,6 @@ const HomePage = () => {
         xs={12}
         md={6}
         sx={{
-        
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -102,7 +132,11 @@ const HomePage = () => {
             boxShadow: 3,
           }}
         >
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 3 ,color:"#825272"}}>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ fontWeight: 'bold', mb: 3, color: '#825272' }}
+          >
             Select Your Service
           </Typography>
 
@@ -114,25 +148,29 @@ const HomePage = () => {
               label="Choose Location"
               onChange={(e) => setLocation(e.target.value)}
             >
-              <MenuItem value="Ahmedabad">Ahmedabad</MenuItem>
-              <MenuItem value="Gandhinagar">Gandhinagar</MenuItem>
-              <MenuItem value="Rajkot">Rajkot</MenuItem>
-              <MenuItem value="Surat">Surat</MenuItem>
-              <MenuItem value="Vadodara">Vadodara</MenuItem>
+              {locations.map((loc) => (
+                <MenuItem key={loc} value={loc}>
+                  {loc}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
           <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel id="service-label" required>Choose Service</InputLabel>
+            <InputLabel id="service-label" required>
+              Choose Service
+            </InputLabel>
             <Select
               labelId="service-label"
               value={service}
               label="Choose Service"
               onChange={(e) => setService(e.target.value)}
             >
-              <MenuItem value="Mehendi" >Mehendi</MenuItem>
-              <MenuItem value="Nail Art">Nail Art</MenuItem>
-              <MenuItem value="Makeup">Makeup</MenuItem>
+              {services.map((srv) => (
+                <MenuItem key={srv} value={srv}>
+                  {srv}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 

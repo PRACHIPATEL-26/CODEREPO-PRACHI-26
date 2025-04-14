@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Container,
   Typography,
@@ -11,18 +11,56 @@ import {
   FormControl,
   InputLabel,
   Select,
-} from '@mui/material';
-
+} from "@mui/material";
+import { collection, addDoc, doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../config/firebase";
 
 const AppointmentPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const auth = getAuth();
+
+  // Retrieve data passed from Mahendiartistdetail
+  const { artistName, service, cost } = location.state || {};
+
   const [formData, setFormData] = useState({
-    name: '',
-    service: '',
-    date: '',
-    time: '',
-    paymentOption: '',
+    artistName: artistName || "",
+    service: service || "",
+    cost: cost || "",
+    date: "",
+    time: "",
+    paymentStatus: "Pending",
+    userName: "", // Will be fetched from Firestore
   });
+
+  // Fetch user's name from Firestore
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists()) {
+            const name = userSnap.data().name || "Anonymous";
+            setFormData((prev) => ({
+              ...prev,
+              userName: name,
+            }));
+          } else {
+            console.log("No such user document in Firestore!");
+          }
+        } catch (error) {
+          console.error("Error fetching user name from Firestore:", error);
+        }
+      } else {
+        console.log("No user is logged in");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,36 +70,47 @@ const AppointmentPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Appointment Details:', formData);
-  
-    if (formData.paymentOption === 'advance') {
-      // Navigate to the payment page with form data (if needed)
-      navigate('/User/Payment', { state: { ...formData } });
-    } else {
-      alert('Appointment booked successfully! You will pay after the service.');
+    console.log("Appointment Details:", formData);
+
+    try {
+      // Add to user's previous orders
+      const userOrderRef = await addDoc(collection(db, "userpreviousorders"), {
+        artist: formData.artistName,
+        service: formData.service,
+        cost: formData.cost,
+        date: formData.date,
+        time: formData.time,
+        paymentStatus: formData.paymentStatus,
+        status: "Pending",
+        userName: formData.userName,
+        createdAt: new Date(),
+      });
+
+      console.log("User Order written with ID:", userOrderRef.id);
+
+      // Add to artist's booking requests
+      const artistBookingRef = await addDoc(collection(db, "bookingRequests"), {
+        client: formData.userName,
+        service: formData.service,
+        date: formData.date,
+        time: formData.time,
+        cost: formData.cost,
+        paymentStatus: formData.paymentStatus,
+        status: "Pending",
+      });
+
+      console.log("Artist Booking Request ID:", artistBookingRef.id);
+
+      alert("Appointment booked successfully!");
+      navigate("/User/Orders");
+    } catch (error) {
+      console.error("Error adding appointment:", error);
+      alert("Failed to book the appointment. Please try again.");
     }
   };
-  const getCostDisplay = () => {
-    const servicePrices = {
-      Mehendi: 800,
-      'Nail Art': 1200,
-      Makeup: 1500,
-    };
-  
-    const price = servicePrices[formData.service];
-  
-    if (!price) return '';
-  
-    if (formData.paymentOption === 'advance') {
-      return `₹${price / 2} (50% advance)`;
-    } else if (formData.paymentOption === 'after') {
-      return `₹${price} (Full payment after service)`;
-    }
-    return '';
-  };
-  
+
   return (
     <Container maxWidth="sm">
       <Paper elevation={4} sx={{ padding: 4, borderRadius: 4, mt: 10 }}>
@@ -70,70 +119,85 @@ const AppointmentPage = () => {
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
+          {/* User Name (Read-Only) */}
+          <TextField
+            label="Your Name"
+            name="userName"
+            value={formData.userName}
+            fullWidth
+            required
+            margin="normal"
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+
           <TextField
             label="Artist Name"
-            name="name"
-            value={formData.name}
+            name="artistName"
+            value={formData.artistName}
             onChange={handleChange}
             fullWidth
             required
             margin="normal"
           />
 
-          <FormControl fullWidth required margin="normal">
-            <InputLabel>Select Service</InputLabel>
-            <Select
-            label="Select Service"
-              name="service"
-              value={formData.service}
-              onChange={handleChange}
-            >
-              <MenuItem value="Mehendi">Mehendi</MenuItem>
-              <MenuItem value="Nail Art">Nail Art</MenuItem>
-              <MenuItem value="Makeup">Makeup</MenuItem>
-            </Select>
-          </FormControl>
+          <TextField
+            label="Service"
+            name="service"
+            value={formData.service}
+            onChange={handleChange}
+            fullWidth
+            required
+            margin="normal"
+          />
 
           <TextField
-            label="Preferred Date (e.g., 25 March 2025)"
+            label="Cost"
+            name="cost"
+            value={formData.cost}
+            onChange={handleChange}
+            fullWidth
+            required
+            margin="normal"
+          />
+
+          <TextField
+            label="Preferred Date"
             name="date"
             value={formData.date}
             onChange={handleChange}
             fullWidth
             required
             margin="normal"
-            placeholder="25 March 2025"
+            type="date"
+            InputLabelProps={{ shrink: true }}
           />
 
           <TextField
-            label="Preferred Time (e.g., 3:00 PM)"
+            label="Preferred Time"
             name="time"
             value={formData.time}
             onChange={handleChange}
             fullWidth
             required
             margin="normal"
-            placeholder="3:00 PM"
+            type="time"
+            InputLabelProps={{ shrink: true }}
           />
 
           <FormControl fullWidth required margin="normal">
-            <InputLabel>Payment Option</InputLabel>
+            <InputLabel>Payment Status</InputLabel>
             <Select
-            label="Payment Option"
-              name="paymentOption"
-              value={formData.paymentOption}
+              name="paymentStatus"
+              value={formData.paymentStatus}
               onChange={handleChange}
             >
-              <MenuItem value="advance">50% Advance, 50% After Service</MenuItem>
-              <MenuItem value="after">Pay Full Amount After Service</MenuItem>
+              <MenuItem value="Pending">Pending</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+              <MenuItem value="50% Payment">50% Payment</MenuItem>
             </Select>
           </FormControl>
-
-          {formData.paymentOption && (
-            <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 'bold', color: "#555" }}>
-              Cost: {getCostDisplay()}
-            </Typography>
-          )}
 
           <Button
             type="submit"

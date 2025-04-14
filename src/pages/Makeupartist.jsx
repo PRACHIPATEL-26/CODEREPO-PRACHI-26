@@ -1,71 +1,175 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import Makeupartistdetail from "./Makeupartistdetail";
 import {
-  Grid,
   Card,
-  CardMedia,
-  CardContent,
   Typography,
+  Avatar,
+  Chip,
+  Box,
   Button,
-  CardActions,
-  Box
-} from '@mui/material';
+  Divider,
+  Grid,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { useLocation } from "react-router-dom";
 
-const makeupArtists = [
-  { name: "Glam by Riya", description: "Bridal and party makeup expert." },
-  { name: "Aarti Makeovers", description: "Subtle glam for special events." },
-  { name: "Neha Beauty Studio", description: "HD makeup and contouring." },
-  { name: "Simran's Makeover", description: "Modern bridal looks." },
-  { name: "Roshni Makeup Artistry", description: "Flawless base and eye makeup." },
-  { name: "Sana’s Glam Studio", description: "Natural and elegant makeup." },
-  { name: "Divya Beauty Hub", description: "Perfect for weddings and shoots." },
-  { name: "Komal Creations", description: "Airbrush and party makeup." },
-  { name: "Zara Makeup Studio", description: "Long-lasting glam looks." },
-  { name: "Ayesha Artistry", description: "Affordable and trendy makeup." },
-  { name: "Tanya’s Glow Studio", description: "Classic and bold looks." },
-  { name: "Nidhi Makeovers", description: "Creative eye makeup specialist." },
-  { name: "Megha Beauty Studio", description: "Highly rated for bridal glam." },
-  { name: "Anjali’s Touch", description: "Quick and quality service." },
-  { name: "Ritika's Makeup Lounge", description: "Trendy and radiant finishes." },
-  { name: "Riya Glam Zone", description: "Specializes in elegant bridal makeup." },
-];
+const SmallArtistCard = () => {
+  const [makeupartists, setMakeupartists] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [selectedArtist, setSelectedArtist] = useState(null);
+  const db = getFirestore();
 
-const MakeupArtistsList = () => {
+  // Get location from query parameters
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const selectedLocation = queryParams.get("location"); // e.g., "Ahmedabad"
+
+  // Fetch artists from Firestore based on location
+  useEffect(() => {
+    const fetchMakeupartists = async () => {
+      try {
+        const artistsRef = collection(db, "makeupartists");
+        const q = query(artistsRef, where("location", "==", selectedLocation));
+        const querySnapshot = await getDocs(q);
+
+        const makeupartistsData = [];
+        querySnapshot.forEach((doc) => {
+          makeupartistsData.push({ id: doc.id, ...doc.data() });
+        });
+
+        setMakeupartists(makeupartistsData);
+      } catch (err) {
+        console.error("Error fetching artists:", err);
+      }
+    };
+
+    if (selectedLocation) {
+      fetchMakeupartists();
+    }
+  }, [db, selectedLocation]);
+
+  const handleOpenDialog = (artist) => {
+    setSelectedArtist(artist); // Set the selected artist
+    setOpen(true); // Open the dialog
+  };
+
+  const handleCloseDialog = () => {
+    setOpen(false);
+    setSelectedArtist(null);
+  };
+
   return (
-    <Grid container spacing={3} padding={3} mt={5}>
-      {makeupArtists.map((artist, index) => (
-        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-          <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
-            <CardMedia
-              component="img"
-              height="180"
-              image={`https://source.unsplash.com/featured/?makeup,beauty,artist,${index}`}
-              alt={artist.name}
-            />
-            <CardContent>
-              <Box textAlign="center">
-                <Typography variant="h6" gutterBottom>
-                  {artist.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {artist.description}
-                </Typography>
-              </Box>
-            </CardContent>
-            <CardActions sx={{ justifyContent: 'center' }}>
-              <Button
-                size="small"
-                variant="contained"
-                sx={{ borderRadius: 2, backgroundColor: "#c69087" }}
-                color="secondary"
+    <>
+      {/* <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ textAlign: "center", color: "#825272", mt: 8 }}
+      >
+        Makeup Artists in {selectedLocation || "your area"}
+      </Typography> */}
+
+      <Grid container spacing={2} justifyContent="center" sx={{ mt: 8}}>
+        {makeupartists.length > 0 ? (
+          makeupartists.map((artist) => (
+            <Grid item xs={12} sm={6} md={3} key={artist.id}>
+              <Card
+                sx={{
+                  height: "100%",
+                  width: 280,
+                  borderRadius: 3,
+                  boxShadow: 3,
+                  p: 2,
+                  m: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
               >
-                Book Now
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+                {/* Artist Info */}
+                <Box display="flex" alignItems="center" gap={2}>
+                  <Avatar
+                    alt={artist.name}
+                    src={artist.profilePhoto}
+                    sx={{ width: 60, height: 60 }}
+                  />
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {artist.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {artist.location}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Specialization & Price Range */}
+                <Divider sx={{ my: 1 }} />
+                <Box>
+                  <Typography variant="body2" fontWeight="500">
+                    Specialization:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {artist.specialization}
+                  </Typography>
+                </Box>
+
+                <Box mt={1}>
+                  <Typography variant="body2" fontWeight="500">
+                    Price Range:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {artist.priceRange}
+                  </Typography>
+                </Box>
+
+                {/* View Artist Button */}
+                <Box mt={2} textAlign="center">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="primary"
+                    fullWidth
+                    onClick={() => handleOpenDialog(artist)}
+                  >
+                    View Artist
+                  </Button>
+                </Box>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <Typography
+            variant="h6"
+            sx={{ textAlign: "center", color: "#825272", mt: 4 }}
+          >
+            No artists found for {selectedLocation}.
+          </Typography>
+        )}
+      </Grid>
+
+      <Dialog fullScreen open={open} onClose={handleCloseDialog}>
+        <DialogTitle>
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={handleCloseDialog}
+            aria-label="close"
+            sx={{ position: "absolute", right: 16, top: 16 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Makeupartistdetail artist={selectedArtist} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
-export default MakeupArtistsList;
+export default SmallArtistCard;

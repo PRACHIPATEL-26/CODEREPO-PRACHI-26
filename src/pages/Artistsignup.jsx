@@ -1,224 +1,471 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Container,
-  Typography,
   TextField,
   Button,
   Grid,
-  Box,
+  Typography,
   Paper,
-  Radio,
-  RadioGroup,
-  FormControl,
-  FormLabel,
-  FormControlLabel,
-  Select,
+  IconButton,
+  Avatar,
+  Box,
+  Tooltip,
   MenuItem,
+  Select,
   InputLabel,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+  FormControl,
+  InputAdornment,
+} from "@mui/material";
+import { AddCircleOutline, Delete, PhotoCamera, Visibility, VisibilityOff } from "@mui/icons-material"; // Import visibility icons
+import { db } from "../config/firebase"; // Import Firestore instance
+import { setDoc,doc, serverTimestamp } from "firebase/firestore";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
-export default function ArtistRegister() {
+const ArtistSignup = () => {
+  const navigate = useNavigate();
+  const [services, setServices] = useState([{ name: "", cost: "" }]);
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [artistType, setArtistType] = useState(""); // State for artist type
   const [formData, setFormData] = useState({
-    name: '',
-    Phone:'',
-    email: '',
-    password: '',
-    serviceType: '',
-    experience: '',
-    gender: '',
-    Address:'',
-    country: '',
-    state: '',
-    city: '',
-    pincode: '',
+    name: "",
+    mobile: "",
+    email: "",
+    password: "",
+    address: "",
+    country: "",
+    state: "",
+    location: "",
+    pincode: "",
+    about: "",
+    experience: "",
+    priceRange: "",
+    specialization: "",
+    facebook: "",
+    instagram: "",
+    youtube: "",
   });
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleServiceChange = (index, field, value) => {
+    const updatedServices = [...services];
+    updatedServices[index][field] = value;
+    setServices(updatedServices);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Artist Registration Data:', formData);
-    // Connect this with Firebase later
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
- const navigate =useNavigate();
+
+  const addService = () => {
+    setServices([...services, { name: "", cost: "" }]);
+  };
+
+  const removeService = (index) => {
+    const updatedServices = services.filter((_, i) => i !== index);
+    setServices(updatedServices);
+  };
+
+  const handleProfilePhotoChange = (e) => {
+    const file = e.target.files[0];
+    setProfilePhoto(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewPhoto(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSignup = async () => {
+    if (!artistType) {
+      alert("Please select your artist type.");
+      return;
+    }
+
+    const auth = getAuth();
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+
+      // Prepare artist data
+      const artistData = {
+        name: formData.name,
+        mobile: formData.mobile,
+        email: formData.email,
+        password: formData.password,
+        address: formData.address,
+        country: formData.country,
+        state: formData.state,
+        location: formData.location,
+        pincode: formData.pincode,
+        about: formData.about,
+        experience: formData.experience,
+        priceRange: formData.priceRange,
+        specialization: formData.specialization,
+        facebook: formData.facebook,
+        instagram: formData.instagram,
+        youtube: formData.youtube,
+        profilePhoto: previewPhoto || "",
+        services: services,
+        artistType: artistType, // Include artist type
+        createdAt: serverTimestamp(), // Add a timestamp
+      };
+
+      // Determine the collection based on artist type
+      const collectionName =
+        artistType === "Mahendi Artist"
+          ? "mahendiartists"
+          : artistType === "Nail Artist"
+          ? "nailartists"
+          : "makeupartists"
+
+      // Save artist data to Firestore
+      await setDoc(doc(db, collectionName), artistData);
+
+      alert("Signup successful!");
+      // Redirect to login page
+      navigate("/Artist/Login");
+    } catch (error) {
+      console.error("Error during signup:", error);
+      alert("Signup failed. Please try again.");
+    }
+  };
+
   return (
-    <Container maxWidth="md">
-      <Paper elevation={4} sx={{ padding: 3, borderRadius: 3, mt: 10 }}>
-        <Typography variant="h4" align="center" gutterBottom style={{color:"#825272"}}>
-          Create Account
+    <Container maxWidth="lg">
+      <Paper elevation={3} sx={{ padding: 3, marginTop: 10 }}>
+        {/* Profile Photo Section */}
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          mb={-5}
+          position="relative"
+        >
+          <Avatar
+            src={previewPhoto || "https://via.placeholder.com/150"} // Fallback image
+            alt="Profile"
+            sx={{
+              width: 90,
+              height: 90,
+              margin: "auto",
+            }}
+          />
+          <input
+            accept="image/*"
+            id="profile-photo"
+            type="file"
+            onChange={handleProfilePhotoChange}
+            style={{ display: "none"}}
+          />
+          <label htmlFor="profile-photo">
+            <Tooltip title="Upload Profile Photo">
+              <IconButton
+                 color="primary"
+                component="span"
+                sx={{
+                  position: "relative",
+                  bottom: 42,
+                  right: -28
+                }}
+              >
+                <PhotoCamera />
+              </IconButton>
+            </Tooltip>
+          </label>
+        </Box>
+
+        {/* Title */}
+        <Typography
+          variant="h4"
+          gutterBottom
+          textAlign="center"
+          sx={{ fontSize: { xs: "1.8rem", sm: "2.2rem" ,marginBottom:0} }}
+        >
+          Artist Signup
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {/* Full Name */}
-            <Grid item xs={12} sm={6}>
+        {/* Form Fields */}
+        <Grid container spacing={2} sx={{ marginTop: 0 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Artist Name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel id="artist-type-label">Artist Type</InputLabel>
+              <Select
+                labelId="artist-type-label"
+                value={artistType}
+                onChange={(e) => setArtistType(e.target.value)}
+                label="Artist Type"
+              >
+                <MenuItem value="Mahendi Artist">Mahendi Artist</MenuItem>
+                <MenuItem value="Nail Artist">Nail Artist</MenuItem>
+                <MenuItem value="Makeup Artist">Makeup Artist</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={2} sx={{ marginTop: 0 }}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Mobile No"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Email ID"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              type="email"
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              type={showPassword ? "text" : "password"} // Toggle between text and password
+              variant="outlined"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)} // Toggle visibility
+                      edge="end"
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Country"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="State"
+              name="state"
+              value={formData.state}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Location"
+              name="location"
+              value={formData.location}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Pincode"
+              name="pincode"
+              value={formData.pincode}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={2} sx={{ marginTop: 0 }}>
+          {/* Experience Field */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Experience (in years)"
+              name="experience"
+              value={formData.experience}
+              onChange={handleInputChange}
+              type="number"
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Price Range Field */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Price Range"
+              name="priceRange"
+              value={formData.priceRange}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Specialization Field */}
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Specialization"
+              name="specialization"
+              value={formData.specialization}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Social Media Links */}
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Facebook URL"
+              name="facebook"
+              value={formData.facebook}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Instagram URL"
+              name="instagram"
+              value={formData.instagram}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="YouTube URL"
+              name="youtube"
+              value={formData.youtube}
+              onChange={handleInputChange}
+              variant="outlined"
+            />
+          </Grid>
+
+        {/* About Field */}
+        <Grid item xs={12} >
+            <TextField
+              fullWidth
+              label="About"
+              name="about"
+              value={formData.about}
+              onChange={handleInputChange}
+              multiline
+              rows={2}
+              variant="outlined"
+            />
+          </Grid>
+   </Grid>
+
+        {/* Services Section */}
+        <Typography variant="h6" sx={{ marginTop: 3 }}>
+          Services
+        </Typography>
+        {services.map((service, index) => (
+          <Grid container spacing={2} key={index} alignItems="center">
+            <Grid item xs={12} sm={5.5}>
               <TextField
-                label="Full Name"
-                name="name"
                 fullWidth
-                required
-                value={formData.name}
-                onChange={handleChange}
+                label="Service Name"
+                value={service.name}
+                onChange={(e) => handleServiceChange(index, "name", e.target.value)}
+                variant="outlined"
               />
             </Grid>
-               {/* Phone */}
-               <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={5.5}>
               <TextField
-                label="Phone Number"
-                name="phone"
                 fullWidth
-                required
-                value={formData.phone}
-                onChange={handleChange}
+                label="cost"
+                value={service.cost}
+                onChange={(e) => handleServiceChange(index, "cost", e.target.value)}
+                variant="outlined"
               />
             </Grid>
-
-            {/* Email */}
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={4}>
               <TextField
-                label="Email"
-                name="email"
-                type="email"
                 fullWidth
-                required
-                value={formData.email}
-                onChange={handleChange}
+                label="Example Photo URL"
+                value={service.photo}
+                onChange={(e) => handleServiceChange(index, "photo", e.target.value)}
+                variant="outlined"
               />
-            </Grid>
-
-       {/* Password */}
-       <Grid item xs={12} sm={6}>
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                fullWidth
-                required
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </Grid>
-
-              {/* Service Dropdown */}
-              <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Service Type</InputLabel>
-                <Select
-                  name="serviceType"
-                  value={formData.serviceType}
-                  label="Service Type"
-                  onChange={handleChange}
-                  required
-                >
-                  <MenuItem value="Mehendi">Mehendi</MenuItem>
-                  <MenuItem value="Makeup">Makeup</MenuItem>
-                  <MenuItem value="Nail Art">Nail Art</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Experience */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Years of Experience"
-                name="experience"
-                fullWidth
-                required
-                value={formData.experience}
-                onChange={handleChange}
-              />
-            </Grid>
-
-            {/* Gender */}
-            <Grid item xs={12}>
-              <FormControl component="fieldset" fullWidth>
-                <FormLabel component="legend">Gender</FormLabel>
-                <RadioGroup
-                  row
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                >
-                  <FormControlLabel value="female" control={<Radio />} label="Female" />
-                  <FormControlLabel value="male" control={<Radio />} label="Male" />
-                  <FormControlLabel value="other" control={<Radio />} label="Other" />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-             <Grid item xs={12}>
-                        <TextField
-                         label="Address"
-                        name="Address"
-                        multiline rows={2}
-                        fullWidth
-                        required
-                        value={formData.Address}
-                        onChange={handleChange}
-                      
-                         />
-                      </Grid>
-
-            {/* Country */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Country"
-                name="country"
-                fullWidth
-                required
-                value={formData.country}
-                onChange={handleChange}
-              />
-            </Grid>
-
-            {/* State */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="State"
-                name="state"
-                fullWidth
-                required
-                value={formData.state}
-                onChange={handleChange}
-              />
-            </Grid>
-
-            {/* City */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="City"
-                name="city"
-                fullWidth
-                required
-                value={formData.city}
-                onChange={handleChange}
-              />
-            </Grid>
-
-            {/* Pincode */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Pincode"
-                name="pincode"
-                fullWidth
-                required
-                value={formData.pincode}
-                onChange={handleChange}
-              />
-            </Grid>
-
-            {/* Submit Button */}
-            <Grid item xs={12}>
-            <Button type="submit" style={{backgroundColor:"#c69087"}} variant="contained" fullWidth onClick={() => navigate("/Artist/Login")}>
-  SignUp
-</Button>
-
+            </Grid> */}
+            <Grid item xs={12} sm={1}>
+              <IconButton color="error" onClick={() => removeService(index)}>
+                <Delete />
+              </IconButton>
             </Grid>
           </Grid>
-        </Box>
+        ))}
+        <Button
+          startIcon={<AddCircleOutline />}
+          onClick={addService}
+          sx={{ marginTop: 2 }}
+        >
+          Add Service
+        </Button>
+
+        {/* Signup Button */}
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ marginTop: 3, fontSize: { xs: "0.9rem", sm: "1rem" ,backgroundColor:"#c69087"} }}
+          onClick={handleSignup}
+        >
+          Signup
+        </Button>
       </Paper>
     </Container>
   );
-}
+};
+
+export default ArtistSignup;

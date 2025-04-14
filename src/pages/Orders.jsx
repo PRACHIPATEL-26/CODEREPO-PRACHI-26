@@ -1,101 +1,133 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
   Card,
   CardContent,
-  Chip,
+  Grid,
+  Button,
   Box,
-} from '@mui/material';
-
-const orders = [
-  {
-    id: 'ORD123',
-    service: 'Bridal Makeup',
-    date: '2025-03-01',
-    status: 'Completed',
-    amountPaid: 1500,
-    paymentStatus: 'Paid',
-  },
-  {
-    id: 'ORD124',
-    service: 'Mehendi',
-    date: '2025-03-10',
-    status: 'Upcoming',
-    amountPaid: 500,
-    paymentStatus: 'Advance Paid',
-  },
-  {
-    id: 'ORD125',
-    service: 'Nail Art',
-    date: '2025-02-18',
-    status: 'Completed',
-    amountPaid: 1000,
-    paymentStatus: 'Paid',
-  },
-];
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'Completed':
-      return 'success';
-    case 'Upcoming':
-      return 'primary';
-    case 'Cancelled':
-      return 'error';
-    default:
-      return 'default';
-  }
-};
+} from "@mui/material";
+import { collection, getDocs, doc, deleteDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../config/firebase"; // Ensure Firebase is configured in a separate file
 
 const PreviousOrders = () => {
-  return (
-    <Container maxWidth="lg" sx={{ mt: 12 }}>
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ fontWeight: 'bold', color:"#825272", textAlign: 'center' }}
-      >
-        Your Previous Orders
-      </Typography>
+  const [orders, setOrders] = useState([]);
 
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 4,
-          overflowX: 'auto',
-          pb: 2,
-          mt: 3,
-        }}
-      >
-        {orders.map((order) => (
-          <Card
-            key={order.id}
-            sx={{
-              minWidth: 275,
-              flexShrink: 0,
-              borderRadius: 3,
-              boxShadow: 3,
-            }}
-          >
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" flexWrap="wrap">
-                <Typography variant="h6">{order.service}</Typography>
-                <Chip label={order.status} color={getStatusColor(order.status)} />
-              </Box>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                Date: {order.date}
-              </Typography>
-              <Typography variant="body2">
-                Payment: ₹{order.amountPaid} ({order.paymentStatus})
-              </Typography>
-              <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
-                Order ID: {order.id}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+  useEffect(() => {
+    const fetchOrders = () => {
+      const ordersRef = collection(db, "userpreviousorders");
+
+      // Listen for real-time updates
+      const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
+        const ordersList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setOrders(ordersList); // Update the state with real-time data
+      });
+
+      // Cleanup the listener when the component unmounts
+      return () => unsubscribe();
+    };
+
+    fetchOrders();
+  }, [db]);
+
+  const handleCancel = async (orderId) => {
+    try {
+      const orderRef = doc(db, "userpreviousorders", orderId);
+      await deleteDoc(orderRef); // Delete the order from Firestore
+      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId)); // Update local state
+      console.log(`Order with ID ${orderId} has been canceled.`);
+    } catch (error) {
+      console.error("Error canceling order:", error);
+    }
+  };
+
+  return (
+    <Container maxWidth="md" style={{ marginTop: "80px" }}>
+      <Typography variant="h4" gutterBottom style={{ textAlign: "center", color: "#825272" }}>
+        Previous Orders
+      </Typography>
+      {orders.length > 0 ? (
+        <Grid container spacing={3}>
+          {orders.map((order) => (
+            <Grid item xs={12} sm={6} key={order.id}>
+              <Card
+                elevation={3}
+                style={{
+                  borderRadius: "10px",
+                  position: "relative",
+                  padding: "10px",
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="h6" style={{ fontWeight: "bold", color: "#825272" }}>
+                      {order.service}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      style={{
+                        borderRadius: "20px",
+                        backgroundColor:
+                          order.status === "Accepted"
+                            ? "green"
+                            : order.status === "Pending"
+                            ? "orange"
+                            : order.status === "Rejected"
+                            ? "red"
+                            : "blue",
+                        color: "white",
+                      }}
+                      disabled
+                    >
+                      {order.status}
+                    </Button>
+                  </Box>
+                  <Typography variant="body2" color="textSecondary" style={{ marginTop: "10px" }}>
+                    Artist: {order.artist}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Date: {order.date}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Time: {order.time}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Cost: ₹{order.cost}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Payment Status: {order.paymentStatus || "N/A"} {/* Display payment status */}
+                  </Typography>
+                  <Box
+                    style={{
+                      marginTop: "15px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => handleCancel(order.id)}
+                    >
+                      Cancel
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Typography variant="h6" style={{ textAlign: "center", marginTop: "20px" }}>
+          No previous orders found.
+        </Typography>
+      )}
     </Container>
   );
 };

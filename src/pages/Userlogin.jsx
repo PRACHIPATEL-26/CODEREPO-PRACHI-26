@@ -7,17 +7,40 @@ import {
   Typography,
   Paper,
   Grid,
-  Link
+  Link,
+  InputAdornment,
+  IconButton
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material"; // Import visibility icons
+import { auth } from "../config/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 function Trial() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
-  const handleLogin = () => {
+  const handleLogin = async() => {
+if(!email || !password) {
+  alert("Please fill in all fields.");
+  return;
+}
+try {
+  // Add your login logic here, e.g., Firebase authentication
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  console.log("Login successful:", userCredential.user);
+  
+  const token = await userCredential.user.getIdToken();
+  localStorage.setItem("token", token);
+  localStorage.setItem("userId", userCredential.user.uid); 
     console.log({ email, password });
+    navigate("/Homepage")
     // Add actual login logic here
+} catch (error) {
+  console.error("Login error:", error.message);
+  alert("Invalid email or password. Please try again.");
+}
   };
 
   return (
@@ -48,11 +71,23 @@ function Trial() {
         <TextField
           fullWidth
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"} // Toggle between text and password
           variant="outlined"
           margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)} // Toggle visibility
+                  edge="end"
+                >
+                  {showPassword ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
 
         <Grid container justifyContent="flex-end">

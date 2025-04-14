@@ -1,168 +1,412 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-    Container,
-    TextField,
-    Button,
-    Typography,
-    Paper,
-    Grid,
-    Avatar,
-    IconButton,
-    InputAdornment,
-    MenuItem,
-    Select,
-    InputLabel,
-    FormControl,
-    OutlinedInput,
-    Checkbox,
-    ListItemText,
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Grid,
+  Avatar,
+  IconButton,
+  InputAdornment,
+  CircularProgress,
+  Menu,
+  MenuItem,
 } from "@mui/material";
-import { Visibility, VisibilityOff, PhotoCamera } from "@mui/icons-material";
+import { Visibility, VisibilityOff, PhotoCamera, Delete, AddCircleOutline } from "@mui/icons-material";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-const servicesList = ["Mehendi", "Nail Art", "Makeup"];
+function ArtistProfile() {
+  const [editMode, setEditMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true); // Loading state
+  const [artistData, setArtistData] = useState({
+    name: "",
+    artistType: "",
+    mobile: "",
+    email: "",
+    password: "",
+    address: "",
+    country: "",
+    state: "",
+    location: "",
+    pincode: "",
+    about: "",
+    experience: "",
+    priceRange: "",
+    specialization: "",
+    facebook: "",
+    instagram: "",
+    youtube: "",
+    profilePhoto: "",
+    services: [{ name: "", cost: "" }],
+  });
+  const [profileImage, setProfileImage] = useState("https://via.placeholder.com/150");
 
-function UserProfile() {
-    const [editMode, setEditMode] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [userData, setUserData] = useState({
-        name: "John Doe",
-        address: "123 Main Street, City, State, 12345",
-        email: "johndoe@example.com",
-        password: "password123",
-        number: "9876543210",
-        gender: "Male",
-        country: "USA",
-        state: "California",
-        city: "Los Angeles",
-        pincode: "90001",
-        services: "",
-        experience: ""
-    });
-    const [profileImage, setProfileImage] = useState("https://via.placeholder.com/150");
+  // State for menu
+  const [anchorEl, setAnchorEl] = useState(null);
+  const menuOpen = Boolean(anchorEl);
 
-    const maskedPassword = "•".repeat(userData.password.length);
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setUserData({ ...userData, [name]: value });
-    };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
-    const handleServiceChange = (event) => {
-        const {
-            target: { value },
-        } = event;
-        setUserData({
-            ...userData,
-            services: typeof value === "string" ? value.split(",") : value,
-        });
-    };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    handleMenuClose(); // Close the menu after selecting a photo
+  };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+  const handleRemovePhoto = () => {
+    setProfileImage("https://via.placeholder.com/150"); // Reset to default placeholder
+    handleMenuClose(); // Close the menu after removing the photo
+  };
+
+  useEffect(() => {
+    const fetchArtistData = async (userEmail) => {
+      const db = getFirestore();
+      const collections = ["mahendiartists", "nailartists", "makeupartists"];
+      let artistFound = false;
+
+      try {
+        for (const collectionName of collections) {
+          console.log(`Checking collection: ${collectionName}`);
+          const querySnapshot = await getDocs(
+            query(collection(db, collectionName), where("email", "==", userEmail))
+          );
+
+          if (!querySnapshot.empty) {
+            const artistDoc = querySnapshot.docs[0];
+            const data = artistDoc.data();
+            console.log("Artist data found:", data);
+
+            setArtistData({
+              ...data,
+              name: data.name || "Unknown Artist",
+              artistType: data.artistType || "Unknown Type",
+            });
+
+            if (data.profilePhoto) {
+              setProfileImage(data.profilePhoto);
+            }
+
+            artistFound = true;
+            break;
+          }
         }
+
+        if (!artistFound) {
+          console.error("No artist data found in any collection!");
+          alert("No artist data found. Please ensure your profile is set up correctly.");
+        }
+      } catch (error) {
+        console.error("Error fetching artist data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User is logged in:", user.email);
+        fetchArtistData(user.email); // Fetch data using the user's email
+      } else {
+        console.error("No user is logged in!");
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup the listener on unmount
+  }, []);
+
+  const handleChange = (e) => {
+    setArtistData({ ...artistData, [e.target.name]: e.target.value });
+  };
+
+  if (loading) {
     return (
-        <Container maxWidth="md">
-            <Paper elevation={3} style={{ padding: "20px", marginTop: "80px", textAlign: "center" }}>
-                <div style={{ position: "relative", display: "inline-block" }}>
-                    <Avatar src={profileImage} alt="" sx={{ width: 90, height: 90, margin: "auto" }} />
-                    {editMode && (
-                        <IconButton
-                            color="primary"
-                            component="label"
-                            style={{ position: "absolute", bottom: 0, right: 0 }}
-                        >
-                            <PhotoCamera />
-                            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
-                        </IconButton>
-                    )}
-                </div>
-                <Typography variant="h4" gutterBottom style={{ color: "#825272" }}>
-                    Profile
-                </Typography>
-                <Grid container spacing={2}>
-                    {Object.entries(userData).map(([key, value]) => {
-                        if (key === "services" || key === "experience") return null; // Skip custom render
-                        return (
-                            <Grid item xs={6} key={key}>
-                                <TextField
-                                    fullWidth
-                                    label={key.charAt(0).toUpperCase() + key.slice(1)}
-                                    variant="outlined"
-                                    name={key}
-                                    type={key === "password" && editMode ? (showPassword ? "text" : "password") : "text"}
-                                    value={key === "password" && !editMode ? maskedPassword : value}
-                                    onChange={editMode ? handleChange : undefined}
-                                    InputProps={{
-                                        readOnly: !editMode,
-                                        endAdornment:
-                                            key === "password" && editMode ? (
-                                                <InputAdornment position="end">
-                                                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            ) : null,
-                                    }}
-                                />
-                            </Grid>
-                        );
-                    })}
-
-                    <Grid item xs={6}>
-                        <FormControl fullWidth>
-                            <InputLabel>Service</InputLabel>
-                            <Select
-                                name="services"
-                                value={userData.services}
-                                onChange={handleChange}
-                                label="Service"
-                                disabled={!editMode}
-                                sx={{ textAlign: "left" }}
-                            >
-                                {servicesList.map((service) => (
-                                    <MenuItem key={service} value={service}>
-                                        {service}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                    {/* Experience Field */}
-                    <Grid item xs={6}>
-                        <TextField
-                            fullWidth
-                            label="Years of Experience"
-                            variant="outlined"
-                            name="experience"
-                            type="number"
-                            value={userData.experience}
-                            onChange={editMode ? handleChange : undefined}
-                            InputProps={{
-                                readOnly: !editMode,
-                            }}
-                        />
-                    </Grid>
-                </Grid>
-                <Button
-                    variant="contained"
-                    fullWidth
-                    style={{ marginTop: "20px", backgroundColor: "#c69087" }}
-                    onClick={() => setEditMode(!editMode)}
-                >
-                    {editMode ? "Save Profile" : "Edit Profile"}
-                </Button>
-            </Paper>
-        </Container>
+      <Container maxWidth="lg" style={{ textAlign: "center", marginTop: "100px" }}>
+        <CircularProgress />
+        <Typography variant="h6" mt={2}>
+          Loading artist data...
+        </Typography>
+      </Container>
     );
+  }
+
+  // Define the order of fields explicitly
+  const fieldOrder = [
+    "name", // Correct field name for artist name
+    "artistType", // Correct field name for artist type
+    "mobile",
+    "address",
+    "email",
+    "password",
+    "country",
+    "state",
+    "location",
+    "pincode",
+    "experience",
+    "priceRange",
+  ];
+
+  return (
+    <Container maxWidth="lg">
+      <Paper elevation={3} style={{ padding: "20px", marginTop: "80px", textAlign: "center" }}>
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <Avatar
+            src={profileImage}
+            alt="Artist Profile"
+            sx={{ width: 90, height: 90, margin: "auto" }}
+          />
+          {editMode && (
+            <>
+              <IconButton
+                color="primary"
+                onClick={handleMenuOpen}
+                style={{ position: "absolute", bottom: 0, right: 0 }}
+              >
+                <PhotoCamera />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={menuOpen}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+              >
+                <MenuItem>
+                  <label style={{ cursor: "pointer" }}>
+                    Select Photo
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                </MenuItem>
+                <MenuItem onClick={handleRemovePhoto}>Remove Photo</MenuItem>
+              </Menu>
+            </>
+          )}
+        </div>
+        <Typography variant="h4" gutterBottom style={{ color: "#825272" }}>
+          Artist Profile
+        </Typography>
+        <Grid container spacing={2}>
+          {fieldOrder.map((key) => (
+            <Grid item xs={6} key={key}>
+              {key === "password" ? (
+                <TextField
+                  fullWidth
+                  label="Password"
+                  name="password"
+                  variant="outlined"
+                  type={showPassword ? "text" : "password"} // Toggle between text and password
+                  value={artistData.password}
+                  onChange={editMode ? handleChange : undefined}
+                  InputProps={{
+                    readOnly: !editMode,
+                    endAdornment: editMode ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)} // Toggle visibility
+                          edge="end"
+                        >
+                          {showPassword ? <Visibility/> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+              ) : (
+                <TextField
+                  fullWidth
+                  label={key.charAt(0).toUpperCase() + key.slice(1)}
+                  variant="outlined"
+                  name={key}
+                  value={artistData[key]}
+                  onChange={editMode ? handleChange : undefined}
+                  InputProps={{
+                    readOnly: !editMode,
+                  }}
+                />
+              )}
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Specialization Field */}
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Specialization"
+            name="specialization"
+            variant="outlined"
+            value={artistData.specialization}
+            onChange={editMode ? handleChange : undefined}
+            InputProps={{
+              readOnly: !editMode,
+            }}
+          />
+        </Grid>
+
+        {/* Social Media Links */}
+        <Grid item xs={4}>
+          <TextField
+            fullWidth
+            label="Facebook"
+            name="facebook"
+            variant="outlined"
+            value={artistData.facebook}
+            onChange={editMode ? handleChange : undefined}
+            InputProps={{
+              readOnly: !editMode,
+            }}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <TextField
+            fullWidth
+            label="Instagram"
+            name="instagram"
+            variant="outlined"
+            value={artistData.instagram}
+            onChange={editMode ? handleChange : undefined}
+            InputProps={{
+              readOnly: !editMode,
+            }}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <TextField
+            fullWidth
+            label="YouTube"
+            name="youtube"
+            variant="outlined"
+            value={artistData.youtube}
+            onChange={editMode ? handleChange : undefined}
+            InputProps={{
+              readOnly: !editMode,
+            }}
+          />
+        </Grid>
+
+        {/* About Field */}
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="About"
+            name="about"
+            variant="outlined"
+            multiline
+            rows={2}
+            value={artistData.about}
+            onChange={editMode ? handleChange : undefined}
+            InputProps={{
+              readOnly: !editMode,
+            }}
+          />
+        </Grid>
+
+        {/* Services Section */}
+        <Typography variant="h6" style={{ marginTop: "20px", textAlign: "left" }}>
+          Services
+        </Typography>
+        {artistData.services.map((service, index) => (
+          <Grid container spacing={2} key={index} alignItems="center">
+            <Grid item xs={12} sm={5}>
+              <TextField
+                fullWidth
+                label="Service Name"
+                name={`serviceName-${index}`}
+                value={service.name}
+                onChange={(e) => {
+                  const updatedServices = [...artistData.services];
+                  updatedServices[index].name = e.target.value;
+                  setArtistData({ ...artistData, services: updatedServices });
+                }}
+                InputProps={{
+                  readOnly: !editMode,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={5}>
+              <TextField
+                fullWidth
+                label="Cost"
+                name={`serviceCost-${index}`}
+                value={service.cost}
+                onChange={(e) => {
+                  const updatedServices = [...artistData.services];
+                  updatedServices[index].cost = e.target.value;
+                  setArtistData({ ...artistData, services: updatedServices });
+                }}
+                InputProps={{
+                  readOnly: !editMode,
+                }}
+              />
+            </Grid>
+            {editMode && (
+              <Grid item xs={2}>
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    const updatedServices = artistData.services.filter((_, i) => i !== index);
+                    setArtistData({ ...artistData, services: updatedServices });
+                  }}
+                >
+                  <Delete />
+                </IconButton>
+              </Grid>
+            )}
+          </Grid>
+        ))}
+
+        {editMode && (
+          <Button
+            variant="outlined"
+            color="primary"
+            style={{ marginTop: "10px" }}
+            onClick={() => {
+              const updatedServices = [...artistData.services, { name: "", cost: "" }];
+              setArtistData({ ...artistData, services: updatedServices });
+            }}
+          >
+            Add Service
+          </Button>
+        )}
+
+        <Button
+          variant="contained"
+          fullWidth
+          style={{ marginTop: "20px", backgroundColor: "#c69087" }}
+          onClick={() => setEditMode(!editMode)}
+        >
+          {editMode ? "Save Profile" : "Edit Profile"}
+        </Button>
+      </Paper>
+    </Container>
+  );
 }
 
-export default UserProfile;
+export default ArtistProfile;

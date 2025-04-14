@@ -16,7 +16,6 @@ import {
 
 const PaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
-
   const handlePayment = (e) => {
     e.preventDefault();
     // Payment logic here

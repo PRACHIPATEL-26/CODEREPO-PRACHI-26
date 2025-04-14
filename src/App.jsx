@@ -19,19 +19,24 @@ import Mahendiartistdetail from "./pages/Mahendiartistdetail";
 import Orders from "./pages/Orders";
 import Artistsignup from "./pages/Artistsignup";
 import Artistlogin from "./pages/Artistlogin";
-import Artistbooking from "./pages/Artistbooking";
 import Artistprofile from "./pages/Artistprofile";
-
+import Artistearning from "./pages/Artistearning";
+// import Artistservices from "./pages/Artistservices";
+import Artistbookingreq from "./pages/Artistbookingreq";
+// import Artistpaymenttrack from "./pages/Artistpaymenttrack";
+// import Artistratingreview from "./pages/Artistratingreview";
+import Artisthelp from "./pages/Artisthelp";
+import Nailartistdetail from "./pages/Nailartistdetail";
+import Mainpage from "./pages/Mainpage";
+import PrivateRoute from "../Privateroute";
 function Glamourshine() {
     return (
         <BrowserRouter>
             <AppBar />
-
-            <Routes>
+            <Routes>   
+                <Route element={<PrivateRoute />} >
                 <Route path="/User/Profile" Component={Userprofile}></Route>
                 <Route path="/Contactus" Component={ContactUs}></Route>
-                <Route path="/User/login" Component={Userlogin}></Route>
-                <Route path="/User/signup" Component={Usersignup}></Route>
                 <Route path="/Aboutuspage" Component={AboutUspage}></Route>
                 <Route path="/Admindashboard" Component={Admindashboard}></Route>
                 <Route path="/User/Forgotpw" Component={Userforgotpw}></Route> 
@@ -44,11 +49,17 @@ function Glamourshine() {
                 <Route path="/User/Makeupartist" Component={Makeupartist}></Route>
                 <Route path="/User/Mahendiartistdetail" Component={Mahendiartistdetail}></Route>
                 <Route path="/User/Orders" Component={Orders}></Route>
-                <Route path="/Artist/Signup" Component={Artistsignup}></Route>
-                <Route path="/Artist/Login" Component={Artistlogin}></Route>
-                <Route path="/Artist/Booking" Component={Artistbooking}></Route>
                 <Route path="/Artist/Profile" Component={Artistprofile}></Route>
-
+                <Route path="/Artist/Earning" Component={Artistearning}></Route>
+                <Route path="/Artist/Bookingreq" Component={Artistbookingreq}></Route>
+                <Route path="/Artist/Help" Component={Artisthelp}></Route>
+                <Route path="/User/Nailartistdetail" Component={Nailartistdetail}></Route>
+                </Route>
+            <Route path="/Mainpage" Component={Mainpage}></Route>
+            <Route path="/User/Login" Component={Userlogin}></Route>
+            <Route path="/User/Signup" Component={Usersignup}></Route>
+            <Route path="/Artist/Signup" Component={Artistsignup}></Route>
+            <Route path="/Artist/Login" Component={Artistlogin}></Route>
             </Routes>
         </BrowserRouter>
     )

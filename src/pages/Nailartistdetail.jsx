@@ -13,7 +13,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import { useNavigate } from "react-router-dom";
 
-const Mahendiartistdetail = ({ artist }) => {
+const Nailartistdetail = ({ artist }) => {
   const navigate = useNavigate();
 
   const handleBookAppointment = (service, cost) => {
@@ -130,4 +130,4 @@ const Mahendiartistdetail = ({ artist }) => {
   );
 };
 
-export default Mahendiartistdetail;
+export default Nailartistdetail;
