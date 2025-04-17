@@ -20,6 +20,7 @@ const Makeupartistdetail = ({ artist }) => {
     navigate("/User/Appointment", {
       state: {
         artistName: artist.name,
+        artistId: artist.id,
         service,
         cost,
       },

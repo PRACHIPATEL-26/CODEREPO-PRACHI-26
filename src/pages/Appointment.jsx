@@ -21,10 +21,12 @@ const AppointmentPage = () => {
   const navigate = useNavigate();
   const auth = getAuth();
 
-  const { artistName, service, cost } = location.state || {};
+  // Destructure all needed values from location.state
+  const { artistId, artistName, service, cost } = location.state || {};
 
   const [formData, setFormData] = useState({
     artistName: artistName || "",
+    artistId: artistId || "", // Add this line
     service: service || "",
     cost: cost || "",
     date: "",
@@ -87,6 +89,7 @@ const AppointmentPage = () => {
         userName: formData.userName,
         userId: userId, // NEW: save userId
         createdAt: new Date(),
+        artistId: formData.artistId, // Use formData.artistId instead of artistId
       });
 
       console.log("User Order written with ID:", userOrderRef.id);
@@ -100,9 +103,27 @@ const AppointmentPage = () => {
         cost: formData.cost,
         paymentStatus: formData.paymentStatus,
         status: "Pending",
+        artistId: formData.artistId, // Use formData.artistId instead of artistId
       });
 
       console.log("Artist Booking Request ID:", artistBookingRef.id);
+
+      // Save appointment with artistId
+      const appointmentData = {
+        artistId: formData.artistId, // Use formData.artistId instead of artistId
+        artistName: formData.artistName,
+        service: formData.service,
+        cost: formData.cost,
+        date: formData.date,
+        time: formData.time,
+        paymentStatus: formData.paymentStatus,
+        userName: formData.userName,
+        userId: userId,
+        createdAt: new Date(),
+      };
+
+      // const appointmentRef = collection(db, "appointments");
+      // await addDoc(appointmentRef, appointmentData);
 
       alert("Appointment booked successfully!");
       navigate("/User/Orders");

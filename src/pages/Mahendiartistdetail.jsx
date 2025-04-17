@@ -20,6 +20,7 @@ const Mahendiartistdetail = ({ artist }) => {
     navigate("/User/Appointment", {
       state: {
         artistName: artist.name,
+        artistId: artist.id,
         service,
         cost,
       },

@@ -17,13 +17,18 @@ const Nailartistdetail = ({ artist }) => {
   const navigate = useNavigate();
 
   const handleBookAppointment = (service, cost) => {
-    navigate("/User/Appointment", {
+    navigate('/User/Appointment', {
       state: {
+        artistId: artist.id,
         artistName: artist.name,
-        service,
-        cost,
-      },
+        service: service,    // Use the parameter passed from the onClick
+        cost: cost          // Use the parameter passed from the onClick
+      }
     });
+  };
+
+  const handleBookAppointmentNew = () => {
+    navigate(`/appointment?artistId=${artist.id}&artistName=${artist.name}`);
   };
 
   if (!artist) {
@@ -126,6 +131,13 @@ const Nailartistdetail = ({ artist }) => {
           </Grid>
         ))}
       </Grid>
+      <Button 
+        onClick={handleBookAppointmentNew}
+        variant="contained"
+        color="primary"
+      >
+        Book Appointment
+      </Button>
     </Box>
   );
 };
