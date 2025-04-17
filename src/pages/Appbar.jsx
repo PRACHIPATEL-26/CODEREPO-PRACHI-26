@@ -99,6 +99,7 @@ const Navbar = () => {
       sx={{ marginLeft: "auto" }}
       onClick={() => {
         localStorage.removeItem("token");
+        localStorage.removeItem("userId");
         navigate(isArtistPath ? "/Artist/Login" : "/User/Login");
       }}
     >

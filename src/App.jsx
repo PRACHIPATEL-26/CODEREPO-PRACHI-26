@@ -55,7 +55,7 @@ function Glamourshine() {
                 <Route path="/Artist/Help" Component={Artisthelp}></Route>
                 <Route path="/User/Nailartistdetail" Component={Nailartistdetail}></Route>
                 </Route>
-            <Route path="/Mainpage" Component={Mainpage}></Route>
+            <Route path="/" Component={Mainpage}></Route>
             <Route path="/User/Login" Component={Userlogin}></Route>
             <Route path="/User/Signup" Component={Usersignup}></Route>
             <Route path="/Artist/Signup" Component={Artistsignup}></Route>

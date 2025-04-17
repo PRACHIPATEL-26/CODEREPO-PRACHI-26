@@ -21,7 +21,6 @@ const AppointmentPage = () => {
   const navigate = useNavigate();
   const auth = getAuth();
 
-  // Retrieve data passed from Mahendiartistdetail
   const { artistName, service, cost } = location.state || {};
 
   const [formData, setFormData] = useState({
@@ -31,17 +30,18 @@ const AppointmentPage = () => {
     date: "",
     time: "",
     paymentStatus: "Pending",
-    userName: "", // Will be fetched from Firestore
+    userName: "",
   });
 
-  // Fetch user's name from Firestore
+  const [userId, setUserId] = useState(null); // NEW: store logged-in user ID
+  // Fetch user data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        setUserId(user.uid); // Save userId
         try {
           const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
-
           if (userSnap.exists()) {
             const name = userSnap.data().name || "Anonymous";
             setFormData((prev) => ({
@@ -75,7 +75,7 @@ const AppointmentPage = () => {
     console.log("Appointment Details:", formData);
 
     try {
-      // Add to user's previous orders
+      // Save to user's previous orders
       const userOrderRef = await addDoc(collection(db, "userpreviousorders"), {
         artist: formData.artistName,
         service: formData.service,
@@ -85,12 +85,13 @@ const AppointmentPage = () => {
         paymentStatus: formData.paymentStatus,
         status: "Pending",
         userName: formData.userName,
+        userId: userId, // NEW: save userId
         createdAt: new Date(),
       });
 
       console.log("User Order written with ID:", userOrderRef.id);
 
-      // Add to artist's booking requests
+      // Save to artist's booking requests
       const artistBookingRef = await addDoc(collection(db, "bookingRequests"), {
         client: formData.userName,
         service: formData.service,
@@ -119,7 +120,6 @@ const AppointmentPage = () => {
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          {/* User Name (Read-Only) */}
           <TextField
             label="Your Name"
             name="userName"
@@ -127,9 +127,7 @@ const AppointmentPage = () => {
             fullWidth
             required
             margin="normal"
-            InputProps={{
-              readOnly: true,
-            }}
+            InputProps={{ readOnly: true }}
           />
 
           <TextField

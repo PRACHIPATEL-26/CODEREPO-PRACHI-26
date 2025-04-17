@@ -129,7 +129,9 @@ const ArtistSignup = () => {
           : "makeupartists"
 
       // Save artist data to Firestore
-      await setDoc(doc(db, collectionName), artistData);
+      // await setDoc(doc(db, collectionName), artistData,userCredential.user.uid);
+      await setDoc(doc(db, collectionName, user.uid), artistData);
+
 
       alert("Signup successful!");
       // Redirect to login page

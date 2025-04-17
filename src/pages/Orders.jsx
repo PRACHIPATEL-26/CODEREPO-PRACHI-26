@@ -8,38 +8,58 @@ import {
   Button,
   Box,
 } from "@mui/material";
-import { collection, getDocs, doc, deleteDoc, onSnapshot } from "firebase/firestore";
-import { db } from "../config/firebase"; // Ensure Firebase is configured in a separate file
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../config/firebase";
 
 const PreviousOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    const fetchOrders = () => {
-      const ordersRef = collection(db, "userpreviousorders");
+    const auth = getAuth();
 
-      // Listen for real-time updates
-      const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
-        const ordersList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setOrders(ordersList); // Update the state with real-time data
-      });
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        console.log("User not logged in.");
+        setUserId(null);
+      }
+    });
 
-      // Cleanup the listener when the component unmounts
-      return () => unsubscribe();
-    };
+    return () => unsubscribeAuth();
+  }, []);
 
-    fetchOrders();
-  }, [db]);
+  useEffect(() => {
+    if (!userId) return;
+
+    const ordersRef = collection(db, "userpreviousorders");
+    const q = query(ordersRef, where("userId", "==", userId));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ordersList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setOrders(ordersList);
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
 
   const handleCancel = async (orderId) => {
     try {
-      const orderRef = doc(db, "userpreviousorders", orderId);
-      await deleteDoc(orderRef); // Delete the order from Firestore
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId)); // Update local state
-      console.log(`Order with ID ${orderId} has been canceled.`);
+      await deleteDoc(doc(db, "userpreviousorders", orderId));
+      setOrders((prev) => prev.filter((order) => order.id !== orderId));
+      console.log(`Order with ID ${orderId} canceled.`);
     } catch (error) {
       console.error("Error canceling order:", error);
     }
@@ -50,18 +70,12 @@ const PreviousOrders = () => {
       <Typography variant="h4" gutterBottom style={{ textAlign: "center", color: "#825272" }}>
         Previous Orders
       </Typography>
+
       {orders.length > 0 ? (
         <Grid container spacing={3}>
           {orders.map((order) => (
             <Grid item xs={12} sm={6} key={order.id}>
-              <Card
-                elevation={3}
-                style={{
-                  borderRadius: "10px",
-                  position: "relative",
-                  padding: "10px",
-                }}
-              >
+              <Card elevation={3} style={{ borderRadius: "10px", padding: "10px" }}>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Typography variant="h6" style={{ fontWeight: "bold", color: "#825272" }}>
@@ -79,7 +93,7 @@ const PreviousOrders = () => {
                             ? "orange"
                             : order.status === "Rejected"
                             ? "red"
-                            : "blue",
+                            : "gray",
                         color: "white",
                       }}
                       disabled
@@ -87,6 +101,7 @@ const PreviousOrders = () => {
                       {order.status}
                     </Button>
                   </Box>
+
                   <Typography variant="body2" color="textSecondary" style={{ marginTop: "10px" }}>
                     Artist: {order.artist}
                   </Typography>
@@ -100,15 +115,10 @@ const PreviousOrders = () => {
                     Cost: ₹{order.cost}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    Payment Status: {order.paymentStatus || "N/A"} {/* Display payment status */}
+                    Payment Status: {order.paymentStatus || "N/A"}
                   </Typography>
-                  <Box
-                    style={{
-                      marginTop: "15px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
+
+                  <Box mt={2} display="flex" justifyContent="space-between">
                     <Button
                       variant="outlined"
                       color="error"
