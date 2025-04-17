@@ -41,6 +41,7 @@ const SmallArtistCard = () => {
         querySnapshot.forEach((doc) => {
           nailartistsData.push({ id: doc.id, ...doc.data() });
         });
+        console.log(nailartistsData);
         setNailartists(nailartistsData);
       } catch (err) {
         console.error("Error fetching artists:", err);

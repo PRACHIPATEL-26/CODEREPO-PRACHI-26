@@ -15,17 +15,16 @@ import { useNavigate } from "react-router-dom";
 
 const Nailartistdetail = ({ artist }) => {
   const navigate = useNavigate();
-
   const handleBookAppointment = (service, cost) => {
     navigate("/User/Appointment", {
       state: {
         artistName: artist.name,
+        
         service,
         cost,
       },
     });
   };
-
   if (!artist) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100%">
