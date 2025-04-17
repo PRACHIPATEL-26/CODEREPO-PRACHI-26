@@ -14,24 +14,61 @@ import {
   Button,
 } from "@mui/material";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const ArtistEarnings = () => {
   const [earnings, setEarnings] = useState([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
+  const [artistId, setArtistId] = useState(null); // Store the logged-in artist's ID
+  const [loading, setLoading] = useState(true);
   const db = getFirestore();
+  const auth = getAuth();
 
+  // Fetch the logged-in artist's ID
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const email = user.email;
+        const collections = ["nailartists", "mahendiartists", "makeupartists"];
+
+        for (const collectionName of collections) {
+          const artistsRef = collection(db, collectionName);
+          const q = query(artistsRef, where("email", "==", email));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            const artistDoc = querySnapshot.docs[0];
+            setArtistId(artistDoc.id); // Set the artist's ID
+            break;
+          }
+        }
+      } else {
+        setArtistId(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [db]);
+
+  // Fetch earnings for the logged-in artist
   useEffect(() => {
     const fetchEarnings = async () => {
+      if (!artistId) return;
+
       try {
-        // Query the bookingRequests collection for accepted requests
+        // Query the userpreviousorders collection for accepted orders of the logged-in artist
         const bookingRequestsRef = collection(db, "userpreviousorders");
-        const acceptedQuery = query(bookingRequestsRef, where("status", "==", "Accepted"));
+        const acceptedQuery = query(
+          bookingRequestsRef,
+          where("artistId", "==", artistId), // Filter by artistId
+          where("status", "==", "Accepted") // Filter by status
+        );
         const querySnapshot = await getDocs(acceptedQuery);
 
         // Map the data to an array
         const earningsData = querySnapshot.docs.map((doc) => {
           const data = doc.data();
-          console.log("Fetched data:", data); // Debugging log
           return {
             client: data.userName || "Unknown",
             service: data.service || "Unknown",
@@ -53,7 +90,9 @@ const ArtistEarnings = () => {
     };
 
     fetchEarnings();
-  }, [db]);
+  }, [db, artistId]);
+
+  if (loading) return <Typography>Loading...</Typography>;
 
   return (
     <Box sx={{ padding: 4, mt: 10 }}>
@@ -98,12 +137,7 @@ const ArtistEarnings = () => {
                     variant="contained"
                     sx={{
                       borderRadius: 20,
-                      backgroundColor:
-                        earning.status === "Accepted"
-                          ? "green"
-                          : earning.status === "Pending"
-                          ? "orange"
-                          : "red",
+                      backgroundColor: "green",
                       color: "white",
                     }}
                   >
