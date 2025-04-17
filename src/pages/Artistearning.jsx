@@ -13,7 +13,13 @@ import {
   Paper,
   Button,
 } from "@mui/material";
-import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const ArtistEarnings = () => {
@@ -82,7 +88,10 @@ const ArtistEarnings = () => {
         setEarnings(earningsData);
 
         // Calculate total earnings
-        const total = earningsData.reduce((sum, earning) => sum + earning.cost, 0);
+        const total = earningsData.reduce(
+          (sum, earning) => sum + earning.cost,
+          0
+        );
         setTotalEarnings(total);
       } catch (error) {
         console.error("Error fetching earnings:", error);
@@ -96,20 +105,20 @@ const ArtistEarnings = () => {
 
   return (
     <Box sx={{ padding: 4, mt: 10 }}>
-      <Typography variant="h4" style={{ color: "#825272" }} gutterBottom>
+      <Typography variant='h4' style={{ color: "#825272" }} gutterBottom>
         💰 Your Earnings
       </Typography>
 
       <Card sx={{ mb: 4, backgroundColor: "#f9f9f9" }}>
         <CardContent>
-          <Typography variant="h6">Total Earnings</Typography>
-          <Typography variant="h3" color="#825272">
+          <Typography variant='h6'>Total Earnings</Typography>
+          <Typography variant='h3' color='#825272'>
             ₹{totalEarnings}
           </Typography>
         </CardContent>
       </Card>
 
-      <Typography variant="h6" gutterBottom>
+      <Typography variant='h6' gutterBottom>
         Appointment History
       </Typography>
       <TableContainer component={Paper}>
@@ -134,7 +143,7 @@ const ArtistEarnings = () => {
                 <TableCell>₹{earning.cost}</TableCell>
                 <TableCell>
                   <Button
-                    variant="contained"
+                    variant='contained'
                     sx={{
                       borderRadius: 20,
                       backgroundColor: "green",
