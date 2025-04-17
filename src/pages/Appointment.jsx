@@ -50,6 +50,7 @@ const AppointmentPage = () => {
               ...prev,
               userName: name,
             }));
+            console.log(formData)
           } else {
             console.log("No such user document in Firestore!");
           }

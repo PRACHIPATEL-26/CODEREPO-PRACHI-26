@@ -15,7 +15,6 @@ import { useNavigate } from "react-router-dom";
 
 const Nailartistdetail = ({ artist }) => {
   const navigate = useNavigate();
-
   const handleBookAppointment = (service, cost) => {
     navigate('/User/Appointment', {
       state: {
