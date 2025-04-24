@@ -91,7 +91,7 @@ try {
         />
 
         <Grid container justifyContent="flex-end">
-          <Grid item>
+          {/* <Grid item>
             <Link
               component="button"
               variant="body2"
@@ -100,7 +100,7 @@ try {
             >
               Forgot password?
             </Link>
-          </Grid>
+          </Grid> */}
         </Grid>
 
         <Button

@@ -97,7 +97,7 @@ function Trial() {
         />
 
         <Grid container justifyContent="flex-end">
-          <Grid item>
+          {/* <Grid item>
             <Link
               component="button"
               variant="body2"
@@ -106,7 +106,7 @@ function Trial() {
             >
               Forgot password?
             </Link>
-          </Grid>
+          </Grid> */}
         </Grid>
 
         <Button

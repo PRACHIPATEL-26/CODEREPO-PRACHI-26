@@ -76,15 +76,17 @@ const SmallArtistCard = () => {
       <Grid container spacing={2} justifyContent="center" sx={{ mt: 8}}>
         {makeupartists.length > 0 ? (
           makeupartists.map((artist) => (
-            <Grid item xs={12} sm={6} md={3} key={artist.id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={artist.id}>
               <Card
                 sx={{
-                  height: "100%",
-                  width: 280,
+                  width: "100%", // Make card take full width of the Grid item
+                  maxWidth: 300, // Optional: limit max width
+                  // height: "100%",
                   borderRadius: 3,
                   boxShadow: 3,
                   p: 2,
-                  m: 1,
+                  m: "auto",
+
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",

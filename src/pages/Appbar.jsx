@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+// import GSlogo from "../assets/GSlogo.png";
+// import GSlogo2 from "../assets/GSlogo2.png";
+import GSlogo4 from "../assets/GSlogo4.png";
 import {
   AppBar,
   Toolbar,
@@ -84,6 +87,16 @@ const Navbar = () => {
             </List>
           </div>
         </Drawer>
+{/* Logo */}
+<img
+  src={GSlogo4}
+  alt="GlamourShine Logo"
+  style={{
+    height: "40px",
+    marginRight: 0,
+    borderRadius: "50%", // Optional: rounded look
+  }}
+/>
 
         {/* App Title */}
         <Typography variant="h6" sx={{ flexGrow: 1, color: "#FFF", marginLeft: 2 }}>

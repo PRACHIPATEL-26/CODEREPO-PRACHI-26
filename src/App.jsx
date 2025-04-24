@@ -3,11 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Userprofile from "./pages/Userprofile";
 import Userlogin from "./pages/Userlogin";
 import Usersignup from "./pages/Usersignup";
-import Userforgotpw from "./pages/Userforgotpw";
-import Artistforgotpw from "./pages/Artistforgotpw";
 import ContactUs from "./pages/Contactus";
 import AboutUspage from "./pages/Aboutuspage";
-import Admindashboard from "./pages/Admindashboard";
 import Homepage from "./pages/Homepage";
 import AppBar from "./pages/Appbar";
 import Payment from "./pages/Payment";
@@ -21,10 +18,7 @@ import Artistsignup from "./pages/Artistsignup";
 import Artistlogin from "./pages/Artistlogin";
 import Artistprofile from "./pages/Artistprofile";
 import Artistearning from "./pages/Artistearning";
-// import Artistservices from "./pages/Artistservices";
 import Artistbookingreq from "./pages/Artistbookingreq";
-// import Artistpaymenttrack from "./pages/Artistpaymenttrack";
-// import Artistratingreview from "./pages/Artistratingreview";
 import Artisthelp from "./pages/Artisthelp";
 import Nailartistdetail from "./pages/Nailartistdetail";
 import Mainpage from "./pages/Mainpage";
@@ -38,9 +32,6 @@ function Glamourshine() {
                 <Route path="/User/Profile" Component={Userprofile}></Route>
                 <Route path="/Contactus" Component={ContactUs}></Route>
                 <Route path="/Aboutuspage" Component={AboutUspage}></Route>
-                <Route path="/Admindashboard" Component={Admindashboard}></Route>
-                <Route path="/User/Forgotpw" Component={Userforgotpw}></Route> 
-                <Route path="/Artist/Forgotpw" Component={Artistforgotpw}></Route>
                 <Route path="/Homepage" Component={Homepage}></Route>
                 <Route path="/User/Payment" Component={Payment}></Route>
                 <Route path="/User/Appointment" Component={Appointment}></Route>
