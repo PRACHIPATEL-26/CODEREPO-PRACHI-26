@@ -4,7 +4,6 @@ import {
   Card,
   Typography,
   Avatar,
-  Chip,
   Box,
   Button,
   Divider,
@@ -13,6 +12,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
@@ -20,6 +20,7 @@ import { useLocation } from "react-router-dom";
 
 const SmallArtistCard = () => {
   const [makeupartists, setMakeupartists] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
   const [open, setOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState(null);
   const db = getFirestore();
@@ -32,6 +33,7 @@ const SmallArtistCard = () => {
   // Fetch artists from Firestore based on location
   useEffect(() => {
     const fetchMakeupartists = async () => {
+      setLoading(true); // Set loading to true before fetching
       try {
         const artistsRef = collection(db, "makeupartists");
         const q = query(artistsRef, where("location", "==", selectedLocation));
@@ -45,6 +47,8 @@ const SmallArtistCard = () => {
         setMakeupartists(makeupartistsData);
       } catch (err) {
         console.error("Error fetching artists:", err);
+      } finally {
+        setLoading(false); // Set loading to false after fetching
       }
     };
 
@@ -65,28 +69,24 @@ const SmallArtistCard = () => {
 
   return (
     <>
-      {/* <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ textAlign: "center", color: "#825272", mt: 8 }}
-      >
-        Makeup Artists in {selectedLocation || "your area"}
-      </Typography> */}
-
-      <Grid container spacing={2} justifyContent="center" sx={{ mt: 8}}>
-        {makeupartists.length > 0 ? (
+      <Grid container spacing={3} justifyContent="center" sx={{ mt: 8 }}>
+        {loading ? (
+          // Show loading spinner while data is being fetched
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : makeupartists.length > 0 ? (
           makeupartists.map((artist) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={artist.id}>
+            <Grid item xs={12} sm={6} md={4} lg={4} key={artist.id}>
               <Card
                 sx={{
-                  width: "100%", // Make card take full width of the Grid item
-                  maxWidth: 300, // Optional: limit max width
-                  // height: "100%",
+                  // width: "100%",
+                  maxWidth: 300,
                   borderRadius: 3,
                   boxShadow: 3,
                   p: 2,
-                  m: "auto",
-
+                  ml:"auto",
+                  mr:"auto",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -108,8 +108,6 @@ const SmallArtistCard = () => {
                     </Typography>
                   </Box>
                 </Box>
-
-                {/* Specialization & Price Range */}
                 <Divider sx={{ my: 1 }} />
                 <Box>
                   <Typography variant="body2" fontWeight="500">
@@ -119,7 +117,6 @@ const SmallArtistCard = () => {
                     {artist.specialization}
                   </Typography>
                 </Box>
-
                 <Box mt={1}>
                   <Typography variant="body2" fontWeight="500">
                     Price Range:
@@ -128,8 +125,6 @@ const SmallArtistCard = () => {
                     {artist.priceRange}
                   </Typography>
                 </Box>
-
-                {/* View Artist Button */}
                 <Box mt={2} textAlign="center">
                   <Button
                     variant="outlined"
@@ -145,6 +140,7 @@ const SmallArtistCard = () => {
             </Grid>
           ))
         ) : (
+          // Show message if no artists are found
           <Typography
             variant="h6"
             sx={{ textAlign: "center", color: "#825272", mt: 4 }}

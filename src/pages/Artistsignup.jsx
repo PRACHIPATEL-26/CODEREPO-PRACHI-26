@@ -25,8 +25,9 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 const ArtistSignup = () => {
   const navigate = useNavigate();
   const [services, setServices] = useState([{ name: "", cost: "" }]);
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  const [previewPhoto, setPreviewPhoto] = useState(null);
+  // const [profilePhoto, setProfilePhoto] = useState(null);
+  // const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [profileImage, setProfileImage] = useState(""); // base64 image
   const [artistType, setArtistType] = useState(""); // State for artist type
   const [formData, setFormData] = useState({
     name: "",
@@ -48,6 +49,7 @@ const ArtistSignup = () => {
   });
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
+
   const handleServiceChange = (index, field, value) => {
     const updatedServices = [...services];
     updatedServices[index][field] = value;
@@ -68,17 +70,28 @@ const ArtistSignup = () => {
     setServices(updatedServices);
   };
 
-  const handleProfilePhotoChange = (e) => {
+  // const handleProfilePhotoChange = (e) => {
+  //   const file = e.target.files[0];
+  //   setProfilePhoto(file);
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setPreviewPhoto(reader.result);
+  //     };
+      // reader.readAsDataURL(file);
+  //   }
+  // };
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setProfilePhoto(file);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewPhoto(reader.result);
+        setProfileImage(reader.result); // Save base64 directly
       };
       reader.readAsDataURL(file);
     }
   };
+  
 
   const handleSignup = async () => {
     if (!artistType) {
@@ -114,7 +127,9 @@ const ArtistSignup = () => {
         facebook: formData.facebook,
         instagram: formData.instagram,
         youtube: formData.youtube,
-        profilePhoto: previewPhoto || "",
+        // profilePhoto: previewPhoto || "",
+        profilePhoto: profileImage, 
+
         services: services,
         artistType: artistType, // Include artist type
         createdAt: serverTimestamp(), // Add a timestamp
@@ -153,7 +168,7 @@ const ArtistSignup = () => {
           mb={-5}
           position="relative"
         >
-          <Avatar
+          {/* <Avatar
             src={previewPhoto || "https://via.placeholder.com/150"} // Fallback image
             alt="Profile"
             sx={{
@@ -161,8 +176,14 @@ const ArtistSignup = () => {
               height: 90,
               margin: "auto",
             }}
-          />
-          <input
+          /> */}
+          <Avatar
+  src={profileImage || "https://via.placeholder.com/150"} // If no image, show placeholder
+  alt="Profile"
+  sx={{ width: 90, height: 90, margin: "auto" }}
+/>
+
+          {/* <input
             accept="image/*"
             id="profile-photo"
             type="file"
@@ -183,7 +204,30 @@ const ArtistSignup = () => {
                 <PhotoCamera />
               </IconButton>
             </Tooltip>
-          </label>
+          </label> */}
+          <input
+  accept="image/*"
+  id="profile-photo"
+  type="file"
+  onChange={handleImageChange}
+  style={{ display: "none" }}
+/>
+<label htmlFor="profile-photo">
+  <Tooltip title="Upload Profile Photo">
+    <IconButton
+      color="primary"
+      component="span"
+      sx={{
+        position: "relative",
+        bottom: 42,
+        right: -28,
+      }}
+    >
+      <PhotoCamera />
+    </IconButton>
+  </Tooltip>
+</label>
+
         </Box>
 
         {/* Title */}

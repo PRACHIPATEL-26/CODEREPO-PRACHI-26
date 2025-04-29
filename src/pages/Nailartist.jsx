@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
@@ -20,6 +21,7 @@ import { useLocation } from "react-router-dom";
 
 const SmallArtistCard = () => {
   const [nailartists, setNailartists] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
   const [open, setOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState(null);
   const db = getFirestore();
@@ -32,6 +34,7 @@ const SmallArtistCard = () => {
   // Fetch artists from Firestore based on location
   useEffect(() => {
     const fetchNailartists = async () => {
+      setLoading(true); // Set loading to true before fetching
       try {
         const artistsRef = collection(db, "nailartists");
         const q = query(artistsRef, where("location", "==", selectedLocation));
@@ -45,6 +48,9 @@ const SmallArtistCard = () => {
         setNailartists(nailartistsData);
       } catch (err) {
         console.error("Error fetching artists:", err);
+      }
+      finally {
+        setLoading(false); // Set loading to false after fetching
       }
     };
 
@@ -65,26 +71,25 @@ const SmallArtistCard = () => {
 
   return (
     <>
-      {/* <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ textAlign: "center", color: "#825272", mt: 4 }}
-      >
-        Mehendi Artists in {selectedLocation || "your area"}
-      </Typography> */}
 
-      <Grid container spacing={2} justifyContent="center" sx={{ mt: 8 }}>
-        {nailartists.length > 0 ? (
+      <Grid container spacing={3} justifyContent="center" sx={{ mt: 8 }}>
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center",mt: 4 }}>
+            <CircularProgress/>
+          </Box>
+        ):
+        nailartists.length > 0 ? (
           nailartists.map((artist) => (
-            <Grid item xs={12} sm={6} md={3} key={artist.id}>
+            <Grid item xs={12} sm={6} md={4} lg={4} key={artist.id}>
               <Card
                 sx={{
-                  height: "100%",
-                  width: 280,
+               
+                  maxWidth: 300,
                   borderRadius: 3,
                   boxShadow: 3,
                   p: 2,
-                  m: 1,
+                  ml: "auto",
+                  mr: "auto",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",

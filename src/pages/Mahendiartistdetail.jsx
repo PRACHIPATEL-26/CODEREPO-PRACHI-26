@@ -72,6 +72,18 @@ const Mahendiartistdetail = ({ artist }) => {
       <Typography color="text.secondary" mb={2}>
         {artist.specialization}
       </Typography>
+      <Typography variant="h6" mt={4}> Mobile No</Typography>
+      <Typography color="text.secondary" mb={2}>
+        {artist.mobile}
+      </Typography>
+      <Typography variant="h6">Address</Typography>
+      <Typography color="text.secondary" mb={2}>
+        {artist.address}
+      </Typography>
+      <Typography variant="h6">Pincode</Typography>
+      <Typography color="text.secondary" mb={2}>
+        {artist.pincode}
+      </Typography>
 
       <Typography variant="h6">Price Range</Typography>
       <Typography color="text.secondary" mb={2}>
@@ -83,7 +95,7 @@ const Mahendiartistdetail = ({ artist }) => {
         {artist.about}
       </Typography>
 
-      <Typography variant="h6">Gallery</Typography>
+      {/* <Typography variant="h6">Gallery</Typography>
       <Grid container spacing={2} mt={1}>
         {artist.gallery?.map((img, idx) => (
           <Grid item xs={4} key={idx}>
@@ -94,7 +106,7 @@ const Mahendiartistdetail = ({ artist }) => {
             />
           </Grid>
         ))}
-      </Grid>
+      </Grid> */}
 
       <Typography variant="h6" mt={4}>
         Services
