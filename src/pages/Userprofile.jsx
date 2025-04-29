@@ -35,6 +35,8 @@ function UserProfile() {
   });
   const [profileImage, setProfileImage] = useState("https://via.placeholder.com/150");
 
+  const db = getFirestore();
+
   // State for menu
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
@@ -56,7 +58,6 @@ function UserProfile() {
         setProfileImage(newProfileImage);
 
         // Update the profile image in Firestore
-        const db = getFirestore();
         const auth = getAuth();
         const user = auth.currentUser;
 
@@ -79,7 +80,6 @@ function UserProfile() {
     setProfileImage("https://via.placeholder.com/150"); // Reset to default placeholder
 
     // Update Firestore to remove the profile photo
-    const db = getFirestore();
     const auth = getAuth();
     const user = auth.currentUser;
 
@@ -95,9 +95,35 @@ function UserProfile() {
     handleMenuClose(); // Close the menu after removing the photo
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("No user is logged in!");
+        return;
+      }
+
+      const userRef = doc(db, "users", user.uid); // Assuming user profiles are stored in the "users" collection
+
+      // Update the Firestore document
+      await updateDoc(userRef, userData);
+
+      alert("Profile updated successfully!");
+      setEditMode(false); // Exit edit mode
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
+    }
+  };
+
+  const handleChange = (e) => {
+    setUserData({ ...userData, [e.target.name]: e.target.value });
+  };
+
   useEffect(() => {
     const fetchUserData = async (user) => {
-      const db = getFirestore();
       const userId = user.uid;
       const userRef = doc(db, "users", userId);
 
@@ -220,7 +246,7 @@ function UserProfile() {
                 name={key}
                 type={key === "password" && editMode ? (showPassword ? "text" : "password") : "text"}
                 value={key === "password" && !editMode ? "••••••••" : userData[key]}
-                onChange={editMode ? (e) => setUserData({ ...userData, [e.target.name]: e.target.value }) : undefined}
+                onChange={editMode ? handleChange : undefined}
                 InputProps={{
                   readOnly: !editMode,
                   endAdornment:
@@ -240,7 +266,7 @@ function UserProfile() {
           variant="contained"
           fullWidth
           style={{ marginTop: "20px", backgroundColor: "#c69087" }}
-          onClick={() => setEditMode(!editMode)}
+          onClick={editMode ? handleSaveProfile : () => setEditMode(true)}
         >
           {editMode ? "Save Profile" : "Edit Profile"}
         </Button>

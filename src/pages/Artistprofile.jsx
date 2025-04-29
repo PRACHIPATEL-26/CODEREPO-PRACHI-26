@@ -14,7 +14,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Visibility, VisibilityOff, PhotoCamera, Delete, AddCircleOutline } from "@mui/icons-material";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function ArtistProfile() {
@@ -133,6 +133,48 @@ function ArtistProfile() {
 
   const handleChange = (e) => {
     setArtistData({ ...artistData, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("No user is logged in!");
+        return;
+      }
+
+      const userEmail = user.email; // Use the logged-in user's email to find the document
+      const collections = ["mahendiartists", "nailartists", "makeupartists"];
+      let documentRef = null;
+
+      // Find the correct collection and document
+      for (const collectionName of collections) {
+        const querySnapshot = await getDocs(
+          query(collection(getFirestore(), collectionName), where("email", "==", userEmail))
+        );
+
+        if (!querySnapshot.empty) {
+          documentRef = doc(getFirestore(), collectionName, querySnapshot.docs[0].id);
+          break;
+        }
+      }
+
+      if (!documentRef) {
+        alert("No artist profile found in the database!");
+        return;
+      }
+
+      // Update the Firestore document
+      await updateDoc(documentRef, artistData);
+
+      alert("Profile updated successfully!");
+      setEditMode(false); // Exit edit mode
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
+    }
   };
 
   if (loading) {
@@ -400,7 +442,7 @@ function ArtistProfile() {
           variant="contained"
           fullWidth
           style={{ marginTop: "20px", backgroundColor: "#c69087" }}
-          onClick={() => setEditMode(!editMode)}
+          onClick={editMode ? handleSaveProfile : () => setEditMode(true)}
         >
           {editMode ? "Save Profile" : "Edit Profile"}
         </Button>
